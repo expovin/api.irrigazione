@@ -66,6 +66,42 @@ router.route('/relay')
     })
 })
 
+router.route('/hastate/:relay')
+.get( function(req, res, next) {
+   // GET the Relay status
+   client.log("Richiesto stato relay "+req.params.relay,{severity:5});
+   let index = parseInt(req.params.relay,10)-1;
+   res.status(200).json({success:true, data: KMT.getRelayStatus()[index]});
+})
+.post( function(req, res, next) {
+    if(req.body.stato ==1 ){
+        client.log("Abilitazione relay "+req.params.relay+". TTC : "+req.body.TTC,{severity:5});
+        if(req.body.callback)
+         client.log("Callback : "+req.body.callback,{severity:7});
+        KMT.enableRelay(req.params.relay, req.body.TTC, req.body.callback)
+        .then( result => {
+             client.log("Abilitazione relay avvenuta con successo",{severity:6});
+             res.status(200).json(result)
+         },error => {
+             client.log("Errore abilitazione relay :"+error,{severity:3});
+             res.status(500).json(error)
+         })
+    } else {
+        client.log("Disabilitazione relay "+req.params.relay,{severity:5});
+        KMT.disableRelay(req.params.relay)
+        .then( result => {
+            client.log("Disabilitazione relay avvenuta con successo",{severity:6});
+            res.status(200).json(result)
+        },error => {
+            client.log("Errore disabilitazione relay :"+error,{severity:3});
+            res.status(500).json(error)
+        })
+    }
+ })
+
+
+
+
 router.route('/relay/:relay')
 .get( function(req, res, next) {
    // GET the Relay status
